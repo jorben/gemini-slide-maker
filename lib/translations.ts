@@ -55,7 +55,8 @@ export const translations = {
     removeSlide: "Remove",
     slideTitle: "Slide Title",
     bulletPoints: "Bullet Points",
-    visualDesc: "Visual Description"
+    visualDesc: "Visual Description",
+    generatingHint: "Task in progress, please do not close the page"
   },
   zh: {
     appTitle: "PPTMaker AI",
@@ -111,6 +112,7 @@ export const translations = {
     removeSlide: "移除",
     slideTitle: "页面标题",
     bulletPoints: "要点内容",
-    visualDesc: "画面描述"
+    visualDesc: "画面描述",
+    generatingHint: "任务进行中，请勿关闭页面"
   }
 };

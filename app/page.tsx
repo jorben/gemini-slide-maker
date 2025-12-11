@@ -1,30 +1,37 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Layout, Languages } from 'lucide-react';
-import { AppStep } from '@/lib/types';
-import type { Presentation, PresentationConfig, InputSource } from '@/lib/types';
-import { SlideStyle } from '@/lib/types';
-import { ApiKeyModal } from '@/components/ApiKeyModal';
-import { translations, Language } from '@/lib/translations';
-import { InputStep } from '@/components/InputStep';
-import { ConfigStep } from '@/components/ConfigStep';
-import { PlanningReviewStep } from '@/components/PlanningReviewStep';
-import { LoadingStep } from '@/components/LoadingStep';
-import { EditorStep } from '@/components/EditorStep';
+import React, { useState } from "react";
+import { Layout, Languages } from "lucide-react";
+import { AppStep } from "@/lib/types";
+import type {
+  Presentation,
+  PresentationConfig,
+  InputSource,
+} from "@/lib/types";
+import { SlideStyle } from "@/lib/types";
+import { ApiKeyModal } from "@/components/ApiKeyModal";
+import { translations, Language } from "@/lib/translations";
+import { InputStep } from "@/components/InputStep";
+import { ConfigStep } from "@/components/ConfigStep";
+import { PlanningReviewStep } from "@/components/PlanningReviewStep";
+import { LoadingStep } from "@/components/LoadingStep";
+import { EditorStep } from "@/components/EditorStep";
 
 const INITIAL_CONFIG: PresentationConfig = {
   pageCount: 6,
-  language: 'English',
+  language: "English",
   style: SlideStyle.MINIMAL,
-  contentModel: 'gemini-2.5-flash',
-  imageModel: 'gemini-2.5-flash-image',
+  contentModel: "gemini-2.5-flash",
+  imageModel: "gemini-2.5-flash-image",
 };
 
 export default function HomePage() {
   const [step, setStep] = useState<AppStep>(AppStep.API_KEY_CHECK);
-  const [inputSource, setInputSource] = useState<InputSource>({ type: 'text', textContent: '' });
-  const [uiLanguage, setUiLanguage] = useState<Language>('en');
+  const [inputSource, setInputSource] = useState<InputSource>({
+    type: "text",
+    textContent: "",
+  });
+  const [uiLanguage, setUiLanguage] = useState<Language>("en");
   const [config, setConfig] = useState<PresentationConfig>(INITIAL_CONFIG);
   const [presentation, setPresentation] = useState<Presentation | null>(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
@@ -34,7 +41,7 @@ export default function HomePage() {
   const t = translations[uiLanguage];
 
   const toggleLanguage = () => {
-    setUiLanguage(prev => prev === 'en' ? 'zh' : 'en');
+    setUiLanguage((prev) => (prev === "en" ? "zh" : "en"));
   };
 
   const handleKeyConfigured = () => {
@@ -43,29 +50,33 @@ export default function HomePage() {
 
   return (
     <div className="h-screen flex flex-col">
-      {step === AppStep.API_KEY_CHECK && <ApiKeyModal onKeyConfigured={handleKeyConfigured} />}
-      
+      {step === AppStep.API_KEY_CHECK && (
+        <ApiKeyModal onKeyConfigured={handleKeyConfigured} />
+      )}
+
       {step !== AppStep.EDITOR && step !== AppStep.API_KEY_CHECK && (
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <div className="bg-indigo-600 p-1.5 rounded-lg">
               <Layout className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-xl text-slate-900">PPTMaker AI</span>
+            <span className="font-bold text-xl text-slate-900">
+              PPTMaker AI
+            </span>
           </div>
-          <button 
+          <button
             onClick={toggleLanguage}
             className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors px-3 py-1.5 rounded-full hover:bg-slate-100"
           >
             <Languages className="w-4 h-4" />
-            {uiLanguage === 'en' ? '中文' : 'English'}
+            {uiLanguage === "en" ? "中文" : "English"}
           </button>
         </header>
       )}
 
-      <main className="flex-1 bg-slate-50 overflow-hidden relative">
+      <main className="flex-1 bg-slate-50 overflow-y-auto relative">
         {step === AppStep.INPUT && (
-          <InputStep 
+          <InputStep
             inputSource={inputSource}
             setInputSource={setInputSource}
             setStep={setStep}
@@ -74,7 +85,7 @@ export default function HomePage() {
           />
         )}
         {step === AppStep.CONFIG && (
-          <ConfigStep 
+          <ConfigStep
             config={config}
             setConfig={setConfig}
             setStep={setStep}
@@ -87,7 +98,7 @@ export default function HomePage() {
           />
         )}
         {step === AppStep.PLANNING_REVIEW && presentation && (
-          <PlanningReviewStep 
+          <PlanningReviewStep
             presentation={presentation}
             setPresentation={setPresentation}
             setStep={setStep}
@@ -99,7 +110,7 @@ export default function HomePage() {
           />
         )}
         {(step === AppStep.PLANNING || step === AppStep.GENERATING) && (
-          <LoadingStep 
+          <LoadingStep
             step={step}
             presentation={presentation}
             generationProgress={generationProgress}
@@ -108,24 +119,27 @@ export default function HomePage() {
           />
         )}
         {step === AppStep.EDITOR && presentation && (
-          <EditorStep 
+          <EditorStep
             presentation={presentation}
             setPresentation={setPresentation}
             activeSlideIndex={activeSlideIndex}
             setActiveSlideIndex={setActiveSlideIndex}
             config={config}
             t={t}
+            setStep={setStep}
           />
         )}
       </main>
 
       <style jsx global>{`
         @media print {
-          @page { 
-            margin: 0; 
+          @page {
+            margin: 0;
             size: 16in 9in landscape;
           }
-          html, body, #__next {
+          html,
+          body,
+          #__next {
             width: auto !important;
             height: auto !important;
             margin: 0;

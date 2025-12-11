@@ -131,7 +131,7 @@ export const PlanningReviewStep: React.FC<Props> = ({
   };
 
   return (
-    <div className="max-w-5xl mx-auto w-full p-6 animate-fade-in pb-24 h-full overflow-y-auto">
+    <div className="max-w-5xl mx-auto w-full p-6 animate-fade-in pb-24">
        <div className="flex items-center justify-between mb-8">
         <div>
             <button 

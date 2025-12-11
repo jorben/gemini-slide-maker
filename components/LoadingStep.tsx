@@ -55,6 +55,7 @@ export const LoadingStep: React.FC<Props> = ({ step, presentation, generationPro
               progress={generationProgress} 
               label={`${completedCount} / ${totalCount} ${t.slidesLabel}`} 
             />
+            <p className="text-xs text-slate-400 mt-2">{t.generatingHint}</p>
           </div>
         </div>
 

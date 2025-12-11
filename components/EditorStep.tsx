@@ -1,19 +1,23 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { 
-  ChevronLeft, 
-  ChevronRight, 
-  RefreshCw, 
-  Download, 
-  Edit3, 
-  Layout, 
+import React from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+  Download,
+  Edit3,
+  Layout,
   Settings,
-  Image as ImageIcon 
-} from 'lucide-react';
-import type { Presentation, PresentationConfig } from '@/lib/types';
-import { getApiHeaders } from '@/lib/api';
-import type { translations } from '@/lib/translations';
+  Image as ImageIcon,
+} from "lucide-react";
+import {
+  AppStep,
+  type Presentation,
+  type PresentationConfig,
+} from "@/lib/types";
+import { getApiHeaders } from "@/lib/api";
+import type { translations } from "@/lib/translations";
 
 interface Props {
   presentation: Presentation;
@@ -21,16 +25,18 @@ interface Props {
   activeSlideIndex: number;
   setActiveSlideIndex: (index: number) => void;
   config: PresentationConfig;
-  t: typeof translations['en'];
+  t: (typeof translations)["en"];
+  setStep: (step: AppStep) => void;
 }
 
-export const EditorStep: React.FC<Props> = ({ 
-  presentation, 
-  setPresentation, 
-  activeSlideIndex, 
-  setActiveSlideIndex, 
+export const EditorStep: React.FC<Props> = ({
+  presentation,
+  setPresentation,
+  activeSlideIndex,
+  setActiveSlideIndex,
   config,
-  t 
+  t,
+  setStep,
 }) => {
   const activeSlide = presentation.slides[activeSlideIndex];
 
@@ -38,37 +44,37 @@ export const EditorStep: React.FC<Props> = ({
     const newSlides = [...presentation.slides];
     const slide = newSlides[slideIndex];
 
-    slide.status = 'generating';
+    slide.status = "generating";
     setPresentation({ ...presentation, slides: newSlides });
 
     try {
-      const imageResponse = await fetch('/api/gemini', {
-        method: 'POST',
+      const imageResponse = await fetch("/api/gemini", {
+        method: "POST",
         headers: getApiHeaders(),
         body: JSON.stringify({
-          action: 'generate-image',
+          action: "generate-image",
           payload: {
             prompt: JSON.stringify({
               slide: slide.content,
               deckTitle: presentation.title,
-              config
+              config,
             }),
-            model: config.imageModel
-          }
-        })
+            model: config.imageModel,
+          },
+        }),
       });
 
       const imageResult = await imageResponse.json();
       if (imageResult.success) {
-        slide.status = 'completed';
+        slide.status = "completed";
         slide.imageUrl = imageResult.data.content;
       } else {
-        slide.status = 'failed';
+        slide.status = "failed";
       }
     } catch (e: unknown) {
-      slide.status = 'failed';
+      slide.status = "failed";
       const err = e as { message?: string; status?: number };
-      if (err.message?.includes('location') || err.status === 400) {
+      if (err.message?.includes("location") || err.status === 400) {
         alert("Location not supported for image generation.");
       }
     }
@@ -84,24 +90,46 @@ export const EditorStep: React.FC<Props> = ({
     <div className="flex h-full bg-slate-100 overflow-hidden">
       {/* Sidebar */}
       <div className="w-64 bg-white border-r border-slate-200 flex flex-col h-full print:hidden">
+        <div
+          className="p-4 border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors"
+          onClick={() => setStep(AppStep.INPUT)}
+        >
+          <div className="flex items-center gap-2">
+            <div className="bg-indigo-600 p-1.5 rounded-lg">
+              <Layout className="w-5 h-5 text-white" />
+            </div>
+            <span className="font-bold text-lg text-slate-900">
+              PPTMaker AI
+            </span>
+          </div>
+        </div>
+
         <div className="p-4 border-b border-slate-100">
-          <h3 className="font-bold text-slate-800 truncate">{presentation.title}</h3>
-          <p className="text-xs text-slate-500">{presentation.slides.length} {t.slidesLabel}</p>
+          <h3 className="font-bold text-slate-800 truncate">
+            {presentation.title}
+          </h3>
+          <p className="text-xs text-slate-500">
+            {presentation.slides.length} {t.slidesLabel}
+          </p>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           {presentation.slides.map((slide, idx) => (
-            <div 
+            <div
               key={slide.id}
               onClick={() => setActiveSlideIndex(idx)}
               className={`p-2 rounded-lg cursor-pointer border-2 transition-all group ${
-                idx === activeSlideIndex ? 'border-indigo-600 bg-indigo-50' : 'border-transparent hover:bg-slate-50'
+                idx === activeSlideIndex
+                  ? "border-indigo-600 bg-indigo-50"
+                  : "border-transparent hover:bg-slate-50"
               }`}
             >
               <div className="flex justify-between items-center mb-1">
-                <span className="text-xs font-bold text-slate-400">#{slide.pageNumber}</span>
-                {slide.status === 'completed' ? (
+                <span className="text-xs font-bold text-slate-400">
+                  #{slide.pageNumber}
+                </span>
+                {slide.status === "completed" ? (
                   <div className="w-2 h-2 rounded-full bg-green-500" />
-                ) : slide.status === 'failed' ? (
+                ) : slide.status === "failed" ? (
                   <div className="w-2 h-2 rounded-full bg-red-500" />
                 ) : (
                   <div className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
@@ -110,19 +138,25 @@ export const EditorStep: React.FC<Props> = ({
               <div className="aspect-video bg-slate-200 rounded overflow-hidden relative">
                 {slide.imageUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={slide.imageUrl} alt="" className="w-full h-full object-cover" />
+                  <img
+                    src={slide.imageUrl}
+                    alt=""
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <ImageIcon className="w-6 h-6 text-slate-400" />
                   </div>
                 )}
               </div>
-              <p className="text-xs text-slate-700 mt-2 truncate font-medium">{slide.content.title}</p>
+              <p className="text-xs text-slate-700 mt-2 truncate font-medium">
+                {slide.content.title}
+              </p>
             </div>
           ))}
         </div>
         <div className="p-4 border-t border-slate-200">
-          <button 
+          <button
             onClick={downloadPDF}
             className="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg flex items-center justify-center gap-2 text-sm font-medium"
           >
@@ -136,16 +170,25 @@ export const EditorStep: React.FC<Props> = ({
         {/* Toolbar */}
         <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 print:hidden">
           <div className="flex items-center gap-4">
-            <button 
-              onClick={() => setActiveSlideIndex(Math.max(0, activeSlideIndex - 1))}
+            <button
+              onClick={() =>
+                setActiveSlideIndex(Math.max(0, activeSlideIndex - 1))
+              }
               disabled={activeSlideIndex === 0}
               className="p-2 rounded hover:bg-slate-100 disabled:opacity-50"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <span className="text-sm font-medium">{t.slideIndicator} {activeSlideIndex + 1} / {presentation.slides.length}</span>
-            <button 
-              onClick={() => setActiveSlideIndex(Math.min(presentation.slides.length - 1, activeSlideIndex + 1))}
+            <span className="text-sm font-medium">
+              {t.slideIndicator} {activeSlideIndex + 1} /{" "}
+              {presentation.slides.length}
+            </span>
+            <button
+              onClick={() =>
+                setActiveSlideIndex(
+                  Math.min(presentation.slides.length - 1, activeSlideIndex + 1)
+                )
+              }
               disabled={activeSlideIndex === presentation.slides.length - 1}
               className="p-2 rounded hover:bg-slate-100 disabled:opacity-50"
             >
@@ -153,12 +196,16 @@ export const EditorStep: React.FC<Props> = ({
             </button>
           </div>
           <div className="flex gap-2">
-            <button 
+            <button
               onClick={() => regenerateSlide(activeSlideIndex)}
-              disabled={activeSlide.status === 'generating'}
+              disabled={activeSlide.status === "generating"}
               className="px-4 py-2 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${activeSlide.status === 'generating' ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-4 h-4 ${
+                  activeSlide.status === "generating" ? "animate-spin" : ""
+                }`}
+              />
               {t.regenerateVisuals}
             </button>
           </div>
@@ -169,14 +216,18 @@ export const EditorStep: React.FC<Props> = ({
           <div className="w-full max-w-5xl aspect-[16/9] bg-white shadow-2xl rounded-lg overflow-hidden relative">
             {activeSlide.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={activeSlide.imageUrl} alt="Slide" className="w-full h-full object-contain" />
+              <img
+                src={activeSlide.imageUrl}
+                alt="Slide"
+                className="w-full h-full object-contain"
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-slate-100">
                 <ImageIcon className="w-16 h-16 text-slate-300" />
               </div>
             )}
 
-            {activeSlide.status === 'generating' && (
+            {activeSlide.status === "generating" && (
               <div className="absolute inset-0 bg-white/80 z-20 flex flex-col items-center justify-center">
                 <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
                 <p className="text-indigo-900 font-medium">{t.designing}</p>
@@ -188,15 +239,18 @@ export const EditorStep: React.FC<Props> = ({
         {/* Print View - All Slides */}
         <div className="hidden print:block print-only">
           {presentation.slides.map((s) => (
-            <div 
-              key={s.id} 
-              className="print-slide"
-            >
+            <div key={s.id} className="print-slide">
               {s.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={s.imageUrl} className="max-w-full max-h-full object-contain" alt={`Slide ${s.pageNumber}`} />
+                <img
+                  src={s.imageUrl}
+                  className="max-w-full max-h-full object-contain"
+                  alt={`Slide ${s.pageNumber}`}
+                />
               ) : (
-                <div className="text-gray-400 text-2xl">Slide {s.pageNumber}</div>
+                <div className="text-gray-400 text-2xl">
+                  Slide {s.pageNumber}
+                </div>
               )}
             </div>
           ))}
@@ -208,13 +262,13 @@ export const EditorStep: React.FC<Props> = ({
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-2">
               <Edit3 className="w-3 h-3" /> {t.editorTitle}
             </label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={activeSlide.content.title}
               onChange={(e) => {
                 const newSlides = [...presentation.slides];
                 newSlides[activeSlideIndex].content.title = e.target.value;
-                setPresentation({...presentation, slides: newSlides});
+                setPresentation({ ...presentation, slides: newSlides });
               }}
               className="w-full p-2 border border-slate-200 rounded focus:border-indigo-500 font-bold text-lg"
             />
@@ -223,12 +277,13 @@ export const EditorStep: React.FC<Props> = ({
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-2">
               <Layout className="w-3 h-3" /> {t.editorBullets}
             </label>
-            <textarea 
-              value={activeSlide.content.bulletPoints.join('\n')}
+            <textarea
+              value={activeSlide.content.bulletPoints.join("\n")}
               onChange={(e) => {
                 const newSlides = [...presentation.slides];
-                newSlides[activeSlideIndex].content.bulletPoints = e.target.value.split('\n');
-                setPresentation({...presentation, slides: newSlides});
+                newSlides[activeSlideIndex].content.bulletPoints =
+                  e.target.value.split("\n");
+                setPresentation({ ...presentation, slides: newSlides });
               }}
               className="w-full flex-1 p-2 border border-slate-200 rounded focus:border-indigo-500 resize-none font-medium"
             />
@@ -237,12 +292,13 @@ export const EditorStep: React.FC<Props> = ({
             <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-2">
               <Settings className="w-3 h-3" /> {t.editorPrompt}
             </label>
-            <textarea 
+            <textarea
               value={activeSlide.content.visualDescription}
               onChange={(e) => {
                 const newSlides = [...presentation.slides];
-                newSlides[activeSlideIndex].content.visualDescription = e.target.value;
-                setPresentation({...presentation, slides: newSlides});
+                newSlides[activeSlideIndex].content.visualDescription =
+                  e.target.value;
+                setPresentation({ ...presentation, slides: newSlides });
               }}
               className="w-full flex-1 p-2 border border-slate-200 rounded focus:border-indigo-500 resize-none text-xs text-slate-600 bg-slate-50"
             />
