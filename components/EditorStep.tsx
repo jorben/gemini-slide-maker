@@ -143,7 +143,7 @@ export const EditorStep: React.FC<Props> = ({
         <div className="p-4 border-t border-slate-200">
           <button
             onClick={downloadPDF}
-            className="w-full py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-lg flex items-center justify-center gap-2 text-sm font-medium"
+            className="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg flex items-center justify-center gap-2 text-sm font-medium transition-colors shadow-sm"
           >
             <Download className="w-4 h-4" /> {t.exportPdf}
           </button>

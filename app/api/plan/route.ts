@@ -20,6 +20,8 @@ async function streamVertexAPI(
   timeoutMs: number = 180000
 ): Promise<Response> {
   const url = `${config.apiBase}/models/${model}:streamGenerateContent?alt=sse`;
+  console.log("[streamVertexAPI] 请求 URL:", url);
+  console.log("[streamVertexAPI] Model:", model);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -36,18 +38,25 @@ async function streamVertexAPI(
     });
 
     clearTimeout(timeoutId);
+    console.log("[streamVertexAPI] 响应状态:", response.status, response.statusText);
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage =
-        (errorData as { error?: { message?: string } })?.error?.message ||
-        response.statusText;
+      const errorText = await response.text();
+      console.error("[streamVertexAPI] 错误响应内容:", errorText);
+      let errorMessage = response.statusText;
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData?.error?.message || response.statusText;
+      } catch {
+        errorMessage = errorText || response.statusText;
+      }
       throw new Error(`API error: ${errorMessage}`);
     }
 
     return response;
   } catch (error) {
     clearTimeout(timeoutId);
+    console.error("[streamVertexAPI] 请求异常:", error);
     if (error instanceof Error && error.name === "AbortError") {
       throw new Error(`Request timeout after ${timeoutMs / 1000} seconds`);
     }
@@ -66,6 +75,8 @@ async function streamOpenAIChatAPI(
   timeoutMs: number = 180000
 ): Promise<Response> {
   const url = `${config.apiBase}/chat/completions`;
+  console.log("[streamOpenAIChatAPI] 请求 URL:", url);
+  console.log("[streamOpenAIChatAPI] Model:", model);
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -92,18 +103,25 @@ async function streamOpenAIChatAPI(
     });
 
     clearTimeout(timeoutId);
+    console.log("[streamOpenAIChatAPI] 响应状态:", response.status, response.statusText);
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage =
-        (errorData as { error?: { message?: string } })?.error?.message ||
-        response.statusText;
+      const errorText = await response.text();
+      console.error("[streamOpenAIChatAPI] 错误响应内容:", errorText);
+      let errorMessage = response.statusText;
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData?.error?.message || response.statusText;
+      } catch {
+        errorMessage = errorText || response.statusText;
+      }
       throw new Error(`API error: ${errorMessage}`);
     }
 
     return response;
   } catch (error) {
     clearTimeout(timeoutId);
+    console.error("[streamOpenAIChatAPI] 请求异常:", error);
     if (error instanceof Error && error.name === "AbortError") {
       throw new Error(`Request timeout after ${timeoutMs / 1000} seconds`);
     }
@@ -124,7 +142,17 @@ export async function POST(request: NextRequest) {
       apiConfig: ApiConfig;
     } = body;
 
+    console.log("[POST /api/plan] 收到请求");
+    console.log("[POST /api/plan] apiConfig:", {
+      protocol: apiConfig?.protocol,
+      apiBase: apiConfig?.apiBase,
+      contentModelId: apiConfig?.contentModelId,
+      hasApiKey: !!apiConfig?.apiKey,
+    });
+    console.log("[POST /api/plan] document 长度:", document?.length);
+
     if (!document || !presentationConfig || !apiConfig) {
+      console.error("[POST /api/plan] 缺少必要参数");
       return new Response(JSON.stringify({ error: "Missing required parameters" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },

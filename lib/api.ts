@@ -16,6 +16,14 @@ export async function planPresentation(
     throw new Error("API not configured");
   }
 
+  console.log("[planPresentation] 开始请求 /api/plan");
+  console.log("[planPresentation] apiConfig:", {
+    protocol: apiConfig.protocol,
+    apiBase: apiConfig.apiBase,
+    contentModelId: apiConfig.contentModelId,
+    hasApiKey: !!apiConfig.apiKey,
+  });
+
   const response = await fetch("/api/plan", {
     method: "POST",
     headers: {
@@ -28,8 +36,11 @@ export async function planPresentation(
     }),
   });
 
+  console.log("[planPresentation] 响应状态:", response.status, response.statusText);
+
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
+    console.error("[planPresentation] 响应错误:", errorData);
     const errorMessage =
       (errorData as { error?: string })?.error || response.statusText;
     throw new Error(errorMessage);
@@ -56,10 +67,12 @@ export async function planPresentation(
     for (const line of lines) {
       if (line.startsWith("data: ")) {
         const data = line.slice(6);
+        console.log("[planPresentation] 收到 SSE 数据:", data.substring(0, 200));
         try {
           const parsed = JSON.parse(data);
           
           if (parsed.error) {
+            console.error("[planPresentation] 服务端返回错误:", parsed.error);
             throw new Error(parsed.error);
           }
           
@@ -68,11 +81,13 @@ export async function planPresentation(
           }
           
           if (parsed.done && parsed.result) {
+            console.log("[planPresentation] 收到完成信号，结果幻灯片数量:", parsed.result?.slides?.length);
             result = parsed.result;
           }
         } catch (e) {
           // 如果是 JSON 解析错误，忽略；如果是业务错误，抛出
           if (e instanceof Error && e.message !== "Unexpected end of JSON input") {
+            console.error("[planPresentation] 处理 SSE 数据时出错:", e);
             throw e;
           }
         }
