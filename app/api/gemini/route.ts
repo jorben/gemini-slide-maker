@@ -6,6 +6,17 @@ import { SlideStyle } from '@/lib/types';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+/**
+ * 创建 GoogleGenAI 实例
+ * 
+ * 注意：Google Gemini API 会根据请求的源 IP 地址判断用户位置。
+ * 即使部署在 Cloudflare 美国节点，如果 Cloudflare 的出口 IP 被识别为不支持的区域，
+ * 仍然会收到 "User location is not supported" 错误。
+ * 
+ * 解决方案：
+ * 1. 使用 httpOptions.headers 确保不传递任何客户端相关的 headers
+ * 2. 如果问题持续，考虑使用 Vertex AI（设置 vertexai: true）
+ */
 function getGenAI(request: NextRequest): GoogleGenAI {
   // Priority: 1. Request header, 2. Environment variable
   const headerKey = request.headers.get('x-api-key');
@@ -15,7 +26,30 @@ function getGenAI(request: NextRequest): GoogleGenAI {
     throw new Error('API key not configured. Please add GEMINI_API_KEY to .env.local');
   }
   
-  return new GoogleGenAI({ apiKey });
+  // 检查是否使用 Vertex AI（无区域限制）
+  const useVertexAI = process.env.USE_VERTEX_AI === 'true';
+  
+  if (useVertexAI) {
+    // Vertex AI 模式 - 需要配置 GOOGLE_CLOUD_PROJECT 和 GOOGLE_CLOUD_LOCATION
+    return new GoogleGenAI({
+      vertexai: true,
+      project: process.env.GOOGLE_CLOUD_PROJECT,
+      location: process.env.GOOGLE_CLOUD_LOCATION || 'us-central1',
+      httpOptions: {
+        headers: {},
+      },
+    });
+  }
+  
+  // Gemini API 模式 - 使用 httpOptions 确保纯服务端请求
+  return new GoogleGenAI({
+    apiKey,
+    httpOptions: {
+      // 显式设置空的 headers，确保不传递任何客户端相关的 headers
+      // 如 X-Forwarded-For, CF-Connecting-IP, X-Real-IP 等
+      headers: {},
+    },
+  });
 }
 
 export async function POST(request: NextRequest) {
