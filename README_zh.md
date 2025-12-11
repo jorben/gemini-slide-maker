@@ -1,5 +1,5 @@
 <div align="center">
-   <img src="https://github.com/jorben/pptmaker/blob/main/public/pptmaker.png" alt="PPTMaker" />
+   <img src="https://github.com/jorben/pptmaker/blob/main/public/pptmaker_zh.png" alt="PPTMaker" />
 </div>
 
 # PPTMaker
