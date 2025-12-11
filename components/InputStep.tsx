@@ -78,50 +78,61 @@ export const InputStep: React.FC<Props> = ({ inputSource, setInputSource, setSte
         <p className="text-lg text-muted-foreground">{t.subtitle}</p>
       </div>
 
-      <div className="bg-card rounded-xl shadow-sm border border-border p-6 mb-8">
-        <div className="mb-4 flex justify-between items-center">
-          <label className="block text-sm font-medium text-foreground">{t.sourceMaterial}</label>
-          <div className="relative">
+      <div className="bg-white dark:bg-card rounded-2xl shadow-xl border border-border/50 p-8 mb-10">
+        <div className="mb-6 flex justify-between items-center">
+          <label className="block text-lg font-semibold text-foreground/90 tracking-tight">{t.sourceMaterial}</label>
+          <div className="relative group">
             <input 
               id="file-upload"
               type="file" 
               accept=".txt,.md,.json,.pdf,.docx" 
               onChange={handleFileUpload}
-              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
             />
-            <button className="text-sm text-primary font-medium hover:text-primary/80 flex items-center gap-1">
-              <FileText className="w-4 h-4" /> {t.uploadBtn}
+            <button className="relative px-4 py-2 bg-primary/10 text-primary hover:bg-primary/20 rounded-full text-sm font-medium transition-all duration-200 flex items-center gap-2 group-hover:scale-105">
+              <FileText className="w-4 h-4" /> 
+              <span>{t.uploadBtn}</span>
             </button>
           </div>
         </div>
         
         {inputSource.fileName ? (
-          <div className="w-full h-64 flex flex-col items-center justify-center border-2 border-dashed border-primary/30 rounded-lg bg-primary/5 relative">
+          <div className="w-full h-72 flex flex-col items-center justify-center border-2 border-dashed border-primary/20 rounded-xl bg-gradient-to-b from-primary/5 to-transparent relative group transition-all duration-300 hover:border-primary/40">
             <button 
               onClick={clearFile}
-              className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-destructive hover:bg-background rounded-full transition-colors"
+              className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-red-500 hover:bg-red-50 rounded-full transition-all duration-200 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0"
               title={t.removeFile}
             >
               <X className="w-5 h-5" />
             </button>
-            <File className="w-16 h-16 text-primary/60 mb-4" />
-            <p className="text-lg font-medium text-primary">{t.fileUploaded}</p>
-            <p className="text-muted-foreground">{inputSource.fileName}</p>
-            {inputSource.type === 'file' && <p className="text-xs text-muted-foreground mt-2">(PDF Analysis Mode)</p>}
-            {inputSource.type === 'text' && inputSource.textContent && (
-              <p className="text-xs text-muted-foreground mt-2">({inputSource.textContent.length} {t.charCount})</p>
-            )}
+            <div className="w-20 h-20 bg-white rounded-2xl shadow-lg flex items-center justify-center mb-6 transform transition-transform group-hover:scale-110 duration-300">
+              <File className="w-10 h-10 text-primary" />
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-sm font-bold text-primary tracking-wider uppercase">{t.fileUploaded}</p>
+              <p className="text-2xl font-semibold text-foreground tracking-tight max-w-md truncate px-4">{inputSource.fileName}</p>
+              {inputSource.type === 'file' && (
+                <span className="inline-block px-3 py-1 bg-primary/10 text-primary text-xs font-medium rounded-full">
+                  PDF Analysis Mode
+                </span>
+              )}
+              {inputSource.type === 'text' && inputSource.textContent && (
+                <p className="text-sm text-muted-foreground">
+                  ({inputSource.textContent.length.toLocaleString()} {t.charCount})
+                </p>
+              )}
+            </div>
           </div>
         ) : (
-          <div className="relative">
+          <div className="relative group">
             <textarea
               value={inputSource.textContent || ''}
               onChange={(e) => setInputSource({ type: 'text', textContent: e.target.value })}
               placeholder={t.pastePlaceholder}
-              className="w-full h-64 p-4 rounded-lg border border-input focus:ring-2 focus:ring-ring focus:border-primary resize-none text-foreground"
+              className="w-full h-72 p-6 rounded-xl border border-input bg-background/50 hover:bg-background/80 focus:bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all duration-200 resize-none text-foreground text-lg leading-relaxed placeholder:text-muted-foreground/50 shadow-inner"
             />
-            <div className="mt-2 text-right text-xs text-muted-foreground">
-              {(inputSource.textContent || '').length} {t.charCount}
+            <div className="absolute bottom-4 right-4 text-xs font-medium text-muted-foreground bg-background/80 backdrop-blur-sm px-2 py-1 rounded-md border border-border">
+              {(inputSource.textContent || '').length.toLocaleString()} {t.charCount}
             </div>
           </div>
         )}
