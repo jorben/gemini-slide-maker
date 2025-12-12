@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Layout, Languages, Settings, Github } from "lucide-react";
+import { Layout, Languages, Settings, Github, History } from "lucide-react";
 import { AppStep } from "@/lib/types";
 import type {
   Presentation,
@@ -16,6 +16,8 @@ import { ConfigStep } from "@/components/ConfigStep";
 import { PlanningReviewStep } from "@/components/PlanningReviewStep";
 import { LoadingStep } from "@/components/LoadingStep";
 import { EditorStep } from "@/components/EditorStep";
+import { HistoryDrawer } from "@/components/HistoryDrawer";
+import { savePresentationToHistory } from "@/lib/db";
 
 const INITIAL_CONFIG: PresentationConfig = {
   pageCount: "auto",
@@ -39,6 +41,7 @@ export default function HomePage() {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [streamingContent, setStreamingContent] = useState("");
   const [showApiModal, setShowApiModal] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     const savedLang = localStorage.getItem("ppt-maker-lang") as Language;
@@ -62,6 +65,22 @@ export default function HomePage() {
     setStep(AppStep.INPUT);
   };
 
+  const handleHistorySelect = (selectedPresentation: Presentation) => {
+    setPresentation(selectedPresentation);
+    setActiveSlideIndex(0);
+    setStep(AppStep.EDITOR);
+    setShowHistory(false);
+  };
+
+  // Save to history when entering editor step
+  useEffect(() => {
+    if (step === AppStep.EDITOR && presentation) {
+      savePresentationToHistory(presentation).catch((err) =>
+        console.error("Failed to save history:", err)
+      );
+    }
+  }, [step, presentation]);
+
   return (
     <div className="h-screen flex flex-col">
       {step === AppStep.API_KEY_CHECK && (
@@ -84,6 +103,14 @@ export default function HomePage() {
             </span>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowHistory(true)}
+              className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full hover:bg-muted"
+              title={t.history}
+            >
+              <History className="w-4 h-4" />
+              <span className="hidden sm:inline">{t.history}</span>
+            </button>
             <button
               onClick={() => setShowApiModal(true)}
               className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-primary transition-colors px-3 py-1.5 rounded-full hover:bg-muted"
@@ -193,6 +220,13 @@ export default function HomePage() {
           forceEdit={true}
         />
       )}
+
+      <HistoryDrawer
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        onSelect={handleHistorySelect}
+        t={t}
+      />
 
       <style jsx global>{`
         @media print {

@@ -78,6 +78,14 @@ export const translations = {
     requestModeClientDirect: "Client Direct",
     requestModeServerProxy: "Server Proxy",
     presetThemeLabel: "Preset Themes",
+    history: "History",
+    noHistory: "No history records found",
+    deleteHistory: "Delete",
+    restoreHistory: "Restore",
+    historyTitle: "Presentation History",
+    historyDesc: "View and restore your previous presentations.",
+    confirmDeleteHistory:
+      "Are you sure you want to delete this history record?",
   },
   zh: {
     appTitle: "PPTMaker AI",
@@ -152,5 +160,12 @@ export const translations = {
     requestModeClientDirect: "客户端直连",
     requestModeServerProxy: "服务端中转",
     presetThemeLabel: "预设主题",
+    history: "历史记录",
+    noHistory: "暂无历史记录",
+    deleteHistory: "删除",
+    restoreHistory: "恢复",
+    historyTitle: "演示文稿历史",
+    historyDesc: "查看并恢复您之前的演示文稿。",
+    confirmDeleteHistory: "确定要删除这条历史记录吗？",
   },
 };
