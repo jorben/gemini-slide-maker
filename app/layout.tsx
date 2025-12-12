@@ -3,8 +3,9 @@ import Script from "next/script";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "PPTMaker AI - Gemini Slide Maker",
-  description: "AI-powered presentation planning and content generation",
+  title: "PPTMaker - AI-powered presentation generator",
+  description:
+    "An AI-powered presentation generator that transforms text and documents into professional slides",
 };
 
 export default function RootLayout({
